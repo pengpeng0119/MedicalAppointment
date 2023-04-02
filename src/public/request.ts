@@ -170,6 +170,11 @@ const RequestApi={
     // 41. 取消预约挂号    GET   /regist_cancel?query=
 	RegistCancel: (data: { _id: string }) =>
     request('regist_cancel', 'GET', data),
+    	// 获取天气
+	WeaTher: (data: { longitude: string; latitude: string }) =>
+    request('weather', 'GET', data),
+    // 疫情数据
+    EpidEmic: (data: { cityName: string }) => request('epidemic', 'GET', data),
 }
 
 // 图片上传接口

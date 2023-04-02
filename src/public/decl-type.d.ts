@@ -406,3 +406,29 @@ export interface Registratorder {
 	tre_time: string;
 	_id: string;
 }
+// ----------定义天气类型---------
+export interface Weather {
+	icon: string;
+	counname: string;
+	pname: string;
+	secondaryname: string;
+	name: string;
+	condition: string;
+	humidity: string;
+	realFeel: string;
+	temp: string;
+	tips: string;
+	uvi: string;
+	windDir: string;
+	windLevel: string;
+	address_icon: string;
+	ziwxian_icon: string;
+	tigan_icon: string;
+}
+
+// --------定义疫情数据------
+export interface Epindemicdata {
+	title: string;
+	numOfpeople: string;
+	color: string;
+}
