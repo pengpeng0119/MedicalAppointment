@@ -3,7 +3,7 @@ import QQMapWX from '@/public/qqmap-wx-jssdk.js';
 var qqmapsdk: any;
 // 实例化API核心类
 qqmapsdk = new QQMapWX({
-	key: '',
+	key: 'HUDBZ-FKGRM-5HL6G-6ZQLH-WHWM6-NCFWU',
 });
 
 // 定位

@@ -53,7 +53,7 @@
 </template>
 
 <script setup lang="ts">
-import skeLeton from '@/Skeleton/SK-phy-exam.vue'
+// import skeLeton from '@/Skeleton/SK-phy-exam.vue'
 import { ref, onMounted, reactive } from 'vue'
 import { RequestApi } from '@/public/request'
 import type { Phydata, Phyterm } from '../../public/decl-type'

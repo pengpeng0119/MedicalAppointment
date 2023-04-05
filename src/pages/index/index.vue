@@ -2,43 +2,14 @@
   <!-- 自定义的导航 -->
   <view class="nav-gation">
     <view class="nav-top"></view>
-    <view class="nav-height">汉江省第四人民医院</view>
+    <view class="nav-height">某某省第一人民医院</view>
   </view>
   <view class="yuyue">
     <image
       mode="aspectFill"
-      src="https://diancan-1252107261.cos.ap-chengdu.myqcloud.com/tianqi/tianqi-top.png"
+      @click="jumpAssess('抑郁测评专业版', 0, '001')"
+      src="https://diancan-1252107261.cos.accelerate.myqcloud.com/yiliao/nav-yiyu.png"
     ></image>
-    <view class="weather">
-      <view
-        :class="addressCode == 202 ? '' : 'prohibit'"
-        @click="openTargeting"
-      >
-        <image :src="weather[0].address_icon"></image>
-        <text>{{ cityData }}</text>
-      </view>
-      <view>
-        <image :src="weather[0].tigan_icon"></image>
-        <text>体感温度 {{ weather[0].realFeel }}°</text>
-      </view>
-      <view>
-        <image :src="weather[0].ziwxian_icon"></image>
-        <text>紫外线强度 {{ weather[0].uvi }}W/m</text>
-      </view>
-    </view>
-    <view class="tempture">
-      <view class="tempture-num">
-        <text>{{ weather[0].temp }}°</text>
-        <image :src="weather[0].icon" mode="widthFix"></image>
-        <text>{{ weather[0].condition }}</text>
-      </view>
-      <view class="tempture-wind tempture-tips">
-        <text>湿度 {{ weather[0].humidity }}%</text>
-        <text>|</text>
-        <text>{{ weather[0].windDir }} {{ weather[0].windLevel }}级</text>
-      </view>
-      <view class="tempture-tips">{{ weather[0].tips }}</view>
-    </view>
   </view>
   <!-- 疫苗预约 -->
   <view class="gongge">
@@ -51,13 +22,13 @@
       <text>{{ item.title }}</text>
     </view>
   </view>
-  <!-- 挂号 -->
+  <!-- 挂号和体检 -->
   <view class="re-me-ex">
     <view
       class="re-me-ex-view"
-      v-for="(item, index) in phydata"
+      v-for="(item, index) in pyhdata"
       :key="index"
-      @click="guhaoJump(index)"
+      @click="regMedex(index)"
     >
       <text class="re-me-ex-title">{{ item.title }}</text>
       <text class="re-me-ex-lable">{{ item.describe }}</text>
@@ -68,8 +39,8 @@
   <view class="online-title">
     <view>热门挂号</view>
     <view class="online-More">
-      <text @click="guhaoJump(0)">查看更多</text>
-      <image src="../../../src/static/other/gengduo.svg"></image>
+      <text @click="regMedex(0)">查看更多</text>
+      <image src="/static/other/gengduo.svg"></image>
     </view>
   </view>
   <view class="online-reg">
@@ -83,13 +54,13 @@
       <image mode="aspectFit" :src="item.image"></image>
     </view>
   </view>
-  <!-- 健康体检 -->
+  <!-- 健康自测 -->
   <view class="online-title">
     <view>健康自测</view>
   </view>
   <view class="self-test" v-if="selftest.length > 0">
     <view
-      class="sele-test-top sele-test-flex sele-test-back sele-test-one"
+      class="sele-test-top sele-test-flex sele-test-one sele-test-back"
       v-for="(item, index) in [selftest[0]]"
       :key="index"
       @click="jumpAssess(item.name, index, '001')"
@@ -100,14 +71,12 @@
         <view class="top-people">
           <text class="top-num">{{ item.number_of_people }}</text>
           <text class="top-min top-lable"
-            >人测过/{{ item.question }}题/{{ item.minute }}分钟</text
+            >人测过 / {{ item.question }}题 / {{ item.minute }}分钟</text
           >
         </view>
       </view>
-      <image mode="widthFix" :src="item.image" class="top-img"></image>
+      <image class="top-img" mode="widthFix" :src="item.image"></image>
     </view>
-  </view>
-  <view class="self-test2" v-if="selftest.length > 0">
     <view
       class="sele-test-top sele-test-flex sele-test-back"
       v-for="(item, index) in selftest.slice(1)"
@@ -117,75 +86,104 @@
       <view class="sele-test-view">
         <text class="top-title">{{ item.name }}</text>
         <text class="top-lable top-min"
-          >{{ item.question }}题/{{ item.minute }}分钟</text
+          >{{ item.question }}题 / {{ item.minute }}分钟</text
         >
         <view class="top-people">
           <text class="top-num">{{ item.number_of_people }}</text>
-          <text class="top-min top-lable">人测</text>
+          <text class="top-min top-lable">人测过</text>
         </view>
       </view>
       <image
-        mode="widthFix"
         class="top-img bottom-img"
+        mode="widthFix"
         :src="item.image"
       ></image>
     </view>
   </view>
-  <view style="height: 50rpx"></view>
-  <skIndex v-if="skeLeton" />
-  <proMpt @parentFunc="reLocate" ref="showcont"></proMpt>
+  <!-- 骨架屏 -->
+  <skIndex v-if="skeLeton"></skIndex>
 </template>
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { RequestApi } from '../../public/request'
-// 引入骨架屏
-import skIndex from '../../Skeleton/SK-index.vue'
+import { RequestApi } from '@/public/request'
 import type {
   Vaccine,
   Phydata,
   Registered,
-  Selftest,
-  Weather,
-  Epindemicdata
+  Selftest
 } from '../../public/decl-type'
-// 打开位置弹窗
-import proMpt from './components/prompt.vue'
-import { getLocation } from '@/public/qq-Location'
-let menu_top = ref<string>('')
-let menu_height = ref<string>('')
-let navHeight = ref('')
+// 骨架屏
+import skIndex from '@/Skeleton/SK-index.vue'
+
+// 取出胶囊按钮数据
+let menu_top = ref<string>('') //胶囊按钮距离顶部的高度
+let menu_height = ref<string>('') //胶囊按钮的高度
 onMounted(() => {
   let MenuButton = uni.getStorageSync('MenuButton') as {
     top: number
     height: number
   }
+  console.log(MenuButton)
   menu_top.value = MenuButton.top + 'px'
   menu_height.value = MenuButton.height + 'px'
-  navHeight.value = MenuButton.top + MenuButton.height + 10 + 'px'
   pageData()
 })
 
-// 首页第一项数据:疫苗预约
+// 首页第一项数据：疫苗预约
 let vaccine = ref<Vaccine[]>([])
-// 首页第二项数据:挂号
-let phydata = ref<Phydata[]>([])
-// 首页第三项数据:热门挂号
+// 首页第二项数据：疫苗预约
+let pyhdata = ref<Phydata[]>([])
+// 首页第三项数据：热门挂号
 let registered = ref<Registered[]>([])
-// 首页第四项数据:健康自测
+// 首页第四项数据：健康自测
 let selftest = ref<Selftest[]>([])
-// 请求数据
-let skeLeton = ref(true)
+
+let skeLeton = ref(true) //骨架屏
 async function pageData() {
   const res: any = await RequestApi.FrontPage()
-  await reLocate()
-  console.log(res.data.data)
+  console.log(res)
   vaccine.value = res.data.data[0].vaccine
-  phydata.value = res.data.data[1].reserve
+  pyhdata.value = res.data.data[1].reserve
   registered.value = res.data.data[2].popular
   selftest.value = res.data.data[3].self_test
   skeLeton.value = false
 }
+
+// 表单提交
+function vaccineApp(index: number) {
+  switch (index) {
+    case 0:
+      uni.navigateTo({ url: '/pages/xinguan-vaccine/xinguan-vaccine' })
+      break
+    case 1:
+      uni.navigateTo({ url: '/pages/hpv-vaccine/hpv-vaccine' })
+      break
+    case 2:
+      uni.navigateTo({ url: '/pages/nucleic-acid/index' })
+      break
+    case 3:
+      uni.navigateTo({ url: '/pages/graphics/index' })
+  }
+}
+// 挂号和体检
+function regMedex(index: number) {
+  switch (index) {
+    case 0:
+      uni.switchTab({ url: '/pages/registered/registered' })
+      break
+    case 1:
+      uni.navigateTo({ url: '/pages/phy-exam/index' })
+  }
+}
+
+// 挂号
+function regRoute(dep_id: string) {
+  uni.navigateTo({
+    url: '/pages/doctor/index?id=' + dep_id
+  })
+}
+
 // 健康自测路由跳转
 function jumpAssess(name: string, index: number, type: string) {
   if (type == '001') {
@@ -204,95 +202,15 @@ function jumpAssess(name: string, index: number, type: string) {
     }
   }
 }
-// 路由跳转1
-function vaccineApp(index: number) {
-  switch (index) {
-    case 0:
-      uni.navigateTo({ url: '/pages/xinguan-vaccine/xinguan-vaccine' })
-      break
-    case 1:
-      uni.navigateTo({ url: '/pages/hpv-vaccine/hpy-vaccine' })
-      break
-    case 2:
-      uni.navigateTo({ url: '/pages/nucleic-acid/index' })
-      break
-    case 3:
-      uni.navigateTo({ url: '/pages/graphics/index' })
-  }
-}
-// 路由跳转2
-function guhaoJump(index: number) {
-  switch (index) {
-    case 0:
-      uni.switchTab({ url: '/pages/registered/registered' })
-      break
-    case 1:
-      uni.navigateTo({ url: '/pages/phy-exam/index' })
-  }
-}
-// 挂号
-function regRoute(dep_id: string) {
-  uni.navigateTo({
-    url: '/pages/doctor/index?id=' + dep_id
-  })
-}
-// 定位城市
-let cityData = ref<string | null>('定位中')
-// 定位状态码
-let addressCode = ref(0)
-// 天气
-let weather = ref<Weather[]>([])
-// 疫情数据
-let epidemicData = ref<Epindemicdata[]>([])
-let mtime = ref('') //统计截止日期
-// 被子组件调用，定位-获取天气和疫情数据
-async function reLocate() {
-  // 获取位置
-  const resAddress = await getLocation()
-  // console.log(resAddress)
-  addressCode.value = resAddress.code
-  // 获取天气
-  let lng = resAddress.lng == 'none' ? 'none' : JSON.stringify(resAddress.lng)
-  let lat = resAddress.lat == 'none' ? 'none' : JSON.stringify(resAddress.lat)
-  const weather_data = (await RequestApi.WeaTher({
-    longitude: lng,
-    latitude: lat
-  })) as { data: { data: Weather[] } }
-  // console.log(weather_data)
-  weather.value = weather_data.data.data
-  // 获取疫情
-  const epidemic = (await RequestApi.EpidEmic({
-    cityName: resAddress.province
-  })) as { data: { data: { mtime: string; cityData: Epindemicdata[] } } }
-  // console.log(epidemic)
-  mtime.value = epidemic.data.data.mtime
-  epidemicData.value = epidemic.data.data.cityData
-  if (resAddress.code == 200) {
-    cityData.value =
-      resAddress.province + ' ' + resAddress.city + ' ' + resAddress.district
-  } else {
-    cityData.value = resAddress.msg
-  }
-}
-// 调用父组件，打开定位弹窗
-let showcont = ref()
-function openTargeting() {
-  console.log('first')
-  showcont.value.showCont()
-}
 </script>
 
 <style scoped>
-.self-test2 {
-  display: flex;
-}
 .nav-gation {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 99;
-  background-color: rgba(255, 255, 255, v-bind('styleOpacity'));
 }
 .nav-top {
   height: v-bind('menu_top');
@@ -301,80 +219,14 @@ function openTargeting() {
   height: v-bind('menu_height');
   line-height: v-bind('menu_height');
   padding-left: 20rpx;
-  margin-bottom: 10rpx;
-  color: v-bind('styleColor');
+  color: #fff;
   font-weight: bold;
   font-size: 35rpx;
-}
-/* 温度 */
-.yuyue {
-  height: 700rpx;
-  position: relative;
-  color: #ffffff;
 }
 .yuyue image {
   width: 100%;
   display: block;
-  height: 700rpx;
-}
-.weather {
-  position: absolute;
-  left: 0;
-  top: v-bind('navHeight');
-}
-.weather image {
-  width: 35rpx;
-  height: 35rpx;
-  display: block;
-  margin-right: 10rpx;
-}
-.weather view {
-  font-size: 30rpx;
-  display: flex;
-  align-items: center;
-  padding: 10rpx 20rpx;
-}
-.weather view:nth-child(1) {
-  font-size: 35rpx !important;
-  font-weight: bold;
-}
-.tempture {
-  position: absolute;
-  left: 50%;
-  top: 75%;
-  transform: translate(-50%, -50%);
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  align-items: center;
-}
-.tempture-num {
-  display: flex;
-  align-items: flex-end;
-}
-.tempture-num image {
-  width: 60rpx;
-  height: 60rpx;
-  display: block;
-  margin: 0 20rpx;
-}
-.tempture-num text:nth-child(1) {
-  font-size: 100rpx;
-  height: 100rpx;
-  line-height: 100rpx;
-}
-.tempture-num text:nth-child(3) {
-  font-size: 35rpx;
-}
-.tempture-wind {
-  padding: 30rpx 0;
-}
-.tempture-wind text:nth-child(2) {
-  padding: 0 20rpx;
-}
-.tempture-tips {
-  font-size: 30rpx;
-  text-align: center;
+  height: 550rpx;
 }
 .gongge {
   display: flex;
@@ -440,28 +292,6 @@ function openTargeting() {
   top: 90rpx;
   left: 20rpx;
 }
-/* 疫情数据 */
-.epidemic-time {
-  font-size: 25rpx;
-  color: #a6abb0;
-}
-.epidemic-view {
-  margin: 10rpx;
-  border-radius: 20rpx;
-  display: flex;
-  flex-wrap: wrap;
-  font-size: 28rpx;
-}
-.epidemic-view view {
-  width: calc(33% - 30rpx * 2);
-  margin: 10rpx;
-  padding: 20rpx;
-  text-align: center;
-}
-.num-of-people {
-  font-weight: bold;
-  font-size: 35rpx;
-}
 /* 在线挂号 */
 .online-title {
   display: flex;
@@ -493,7 +323,6 @@ function openTargeting() {
   width: 50rpx;
   height: 70rpx;
 }
-
 .online-reg view {
   width: calc(33% - 30rpx * 2);
   margin: 10rpx;
@@ -565,8 +394,5 @@ function openTargeting() {
 }
 .top-min {
   font-size: 25rpx;
-}
-.prohibit {
-  pointer-events: none;
 }
 </style>

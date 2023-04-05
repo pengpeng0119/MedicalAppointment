@@ -93,6 +93,7 @@ let S_Data = reactive<Event>({
   phy_time: '',
   show: true
 })
+
 // 调用子组件的方法:选择成员打开弹出
 let compNone = ref()
 function memBer() {
